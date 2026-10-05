@@ -1,4 +1,4 @@
-# Parallel_AMPT 
+# Parallel_AMPT
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![AMPT](https://img.shields.io/badge/AMPT-parallel-green)
@@ -27,6 +27,11 @@ chmod +x prepare_runs.sh run_parallel.sh scripts/*.sh
 ./run_parallel.sh 4 runs
 ./scripts/merge_root.sh runs merged.root
 ```
+
+That's it — 10 independent AMPT runs, 4 executed in parallel, merged into one
+ROOT file.
+
+---
 
 ## 📚 Table of Contents
 
@@ -103,16 +108,17 @@ Additional references (HIJING, ZPC, ART) are listed inside the AMPT manual
 
 ```
 Parallel_AMPT/
-├── prepare_runs.sh
-├── ampt.zip                # Original AMPT source code
 ├── README.md               # This file
-├── run_parallel.sh         # GNU Parallel wrapper script
-├── config/                 # Example ampt.in config files
-│   └── ampt.in
-├── scripts/
-│   ├── merge_root.sh       # Merge multiple ROOT outputs
-│   └── submit_slurm.sh     # SLURM batch submission template
-└── output/                 # Output directory (created at runtime)
+├── LICENSE
+├── .gitignore
+├── ampt.zip                # Original AMPT source code
+├── prepare_runs.sh         # Creates N unique run directories
+├── run_parallel.sh         # Launches all runs with GNU Parallel
+├── config/
+│   └── ampt.in             # AMPT input file (with seed tags)
+└── scripts/
+    ├── merge_root.sh       # Merge multiple ROOT outputs
+    └── submit_slurm.sh     # SLURM batch submission template
 ```
 
 ---
@@ -182,48 +188,104 @@ This produces the executable `ampt.x` (or `ampt`) in the source directory.
 
 ## Configuration
 
-AMPT is controlled by the input file `ampt.in`. A typical example:
+AMPT is controlled by the input file `config/ampt.in`. This repository ships
+the real AMPT input file with **two tagged seed lines** — `! hijing_seed` and
+`! zpc_seed` — that `prepare_runs.sh` uses to inject a unique seed into every
+parallel run.
 
 ```fortran
-'input.ampt'            ! input filename
-3                       ! frame: 3 = lab
-2                       ! collision system flag (2 = AA)
-197                     ! mass number A
-197                     ! mass number B
-200.0                   ! beam energy (GeV)
-0                       ! impact parameter mode (0 = fixed)
-8.0                     ! impact parameter (fm)
-0                       ! npart mode
-0                       ! string melting (0 = default)
-0                       ! ...
-1000                    ! number of events  <-- change per job
-.true.                  ! write ROOT output
+900            ! EFRM (sqrt(S_NN) in GeV if FRAME is CMS)
+CMS             ! FRAME
+A               ! PROJ
+A               ! TARG
+1             ! IAP (projectile A number)
+1              ! IZP (projectile Z number)
+1             ! IAT (target A number)
+1             ! IZT (target Z number)
+100		! NEVNT (total number of events)
+0.              ! BMIN (mininum impact parameter in fm)
+1.		! BMAX (maximum impact parameter in fm, also see below)
+4		! ISOFT (D=4): select Default AMPT or String Melting(see below)
+150		! NTMAX: number of timesteps (D=150), see below
+0.2		! DT: timestep in fm (hadron cascade time= DT*NTMAX) (D=0.2)
+0.30		! PARJ(41): parameter a in Lund symmetric splitting function
+0.15    	! PARJ(42): parameter b in Lund symmetric splitting function
+1	      	! (D=1,yes;0,no) flag for popcorn mechanism(netbaryon stopping)
+1.0	      	! PARJ(5) to control BMBbar vs BBbar in popcorn (D=1.0)
+1		! shadowing flag (Default=1,yes; 0,no)
+0		! quenching flag (D=0,no; 1,yes)
+2.0		! quenching parameter -dE/dx (GeV/fm) in case quenching flag=1
+2.0		! p0 cutoff in HIJING for minijet productions (D=2.0)
+2.265d0  	! parton screening mass in fm^(-1) (D=2.265d0), see below
+0		! IZPC: (D=0 forward-angle parton scatterings; 100,isotropic)
+0.33d0		! alpha in parton cascade (D=0.33d0), see parton screening mass
+1d6		! dpcoal in GeV
+1d6		! drcoal in fm
+0		! ihjsed: take HIJING seed from below (D=0)or at runtime(11)
+13150909	! random seed for HIJING  ! hijing_seed
+8		! random seed for parton cascade  ! zpc_seed
+0		! flag for K0s weak decays (D=0,no; 1,yes)
+1		! flag for phi decays at end of hadron cascade (D=1,yes; 0,no)
+0		! flag for pi0 decays at end of hadron cascade (D=0,no; 1,yes)
+0		! optional OSCAR output (D=0,no; 1,yes; 2&3,more parton info)
+0		! flag for perturbative deuteron calculation (D=0,no; 1or2,yes)
+1		! integer factor for perturbative deuterons(>=1 & <=10000)
+1		! choice of cross section assumptions for deuteron reactions
+-7.		! Pt in GeV: generate events with >=1 minijet above this value
+1000		! maxmiss (D=1000): maximum # of tries to repeat a HIJING event
+3		! flag on initial and final state radiation (D=3,both yes; 0,no)
+1		! flag on Kt kick (D=1,yes; 0,no)
+0		! flag to turn on quark pair embedding (D=0,no; 1,yes)
+7., 0.		! Initial Px and Py values (GeV) of the embedded quark (u or d)
+0., 0.		! Initial x & y values (fm) of the embedded back-to-back q/qbar
+1, 5., 0.       ! nsembd(D=0), psembd (in GeV),tmaxembd (in radian).
+0 		! Flag to enable users to modify shadowing (D=0,no; 1,yes)
+1.d0		! Factor used to modify nuclear shadowing
+0		! Flag for random orientation of reaction plane (D=0,no; 1,yes)
 ```
 
 Each parallel job should have:
-- Its own **working directory** (`run_001`, `run_002`, …)
-- Its own **random seed** (to avoid identical events)
-- A unique **output filename**
+- Its own **working directory** (`runs/run_001`, `runs/run_002`, …)
+- Its own **HIJING seed** (tagged `! hijing_seed`)
+- Its own **ZPC seed** (tagged `! zpc_seed`)
+
+`prepare_runs.sh` handles all of this automatically.
 
 ---
 
 ## Running AMPT in Parallel with GNU Parallel
 
 ### Step 1 — Prepare N independent run directories
+
+Use the helper script (recommended):
+
+```bash
+chmod +x prepare_runs.sh
+./prepare_runs.sh 100 runs ampt/ampt.x config/ampt.in
+```
+
+This creates `runs/run_001/`, `runs/run_002/`, … each containing:
+- a copy of `ampt.x`
+- a copy of `config/ampt.in` with unique seeds injected
+
+Manual equivalent (if you prefer to do it yourself):
+
 ```bash
 mkdir -p runs
-N=100    # number of parallel jobs
-
+N=100
 for i in $(seq 1 $N); do
-    mkdir -p runs/run_$i
-    cp ampt/ampt.x         runs/run_$i/
-    cp config/ampt.in      runs/run_$i/
-    # inject a unique seed per run
-    sed -i "s/^[0-9]*\( *! seed\)/$i\1/" runs/run_$i/ampt.in
+    RUN_ID=$(printf "%03d" "$i")
+    mkdir -p "runs/run_${RUN_ID}"
+    cp ampt/ampt.x     "runs/run_${RUN_ID}/"
+    cp config/ampt.in  "runs/run_${RUN_ID}/"
+    sed -i "s/^[0-9]\+\( *! *hijing_seed\)/$i\1/"       "runs/run_${RUN_ID}/ampt.in"
+    ZPC_SEED=$(( i + 100000 ))
+    sed -i "s/^[0-9]\+\( *! *zpc_seed\)/${ZPC_SEED}\1/" "runs/run_${RUN_ID}/ampt.in"
 done
 ```
 
 ### Step 2 — Run all jobs in parallel
+
 Using the provided wrapper `run_parallel.sh`:
 
 ```bash
@@ -240,6 +302,7 @@ ls -d ${RUN_DIR}/run_* | \
 ```
 
 Execute:
+
 ```bash
 chmod +x run_parallel.sh
 ./run_parallel.sh 8 runs
@@ -256,6 +319,7 @@ chmod +x run_parallel.sh
 | `--bar`         | (alternative) ASCII progress bar                               |
 
 ### Step 4 — Verify completion
+
 ```bash
 grep -c "DONE" runs/run_*/ampt.log       # each log should show DONE
 ls runs/run_*/ampt.out                   # ROOT / text output per job
@@ -274,9 +338,13 @@ hadd -f merged_ampt.root runs/run_*/ampt.out
 ```
 
 Or merge plain-text files:
+
 ```bash
 cat runs/run_*/ampt.dat > merged_ampt.dat
 ```
+
+> ℹ️ The exact output filename (`ampt.out`, `ampt.dat`, …) depends on the AMPT
+> version. Check inside a completed `runs/run_*/` directory to confirm.
 
 ---
 
@@ -297,6 +365,7 @@ cd runs/run_${SLURM_ARRAY_TASK_ID}
 ```
 
 Submit with:
+
 ```bash
 sbatch scripts/submit_slurm.sh
 ```
@@ -315,6 +384,7 @@ You can still use GNU Parallel **inside** each node for multi-core runs.
 | ROOT library not found              | Set `LD_LIBRARY_PATH=$ROOTSYS/lib`                         |
 | Output files overwrite each other   | Run each job in its own directory (as shown above)         |
 | Jobs stall                          | Reduce `-j` to match physical cores, not logical threads   |
+| `sed` fails on macOS                | Use `sed -i '' "s/.../.../"` (add empty backup arg)        |
 
 ---
 
@@ -334,7 +404,7 @@ for making the code publicly available.
 
 ## 🧪 Tested With
 
-| OS | Compiler | ROOT | GNU Parallel | AMPT |
-|----|----------|------|--------------|------|
-| Ubuntu 22.04 | gcc 11 | 6.28 | 20210822 | v2.26t9b |
-| Rocky Linux 9 | gcc 11 | 6.28 | 20210822 | v2.26t9b |
+| OS              | Compiler | ROOT  | GNU Parallel | AMPT       |
+|-----------------|----------|-------|--------------|------------|
+| Ubuntu 22.04    | gcc 11   | 6.28  | 20210822     | v2.26t9b   |
+| Rocky Linux 9   | gcc 11   | 6.28  | 20210822     | v2.26t9b   |
