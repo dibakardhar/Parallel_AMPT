@@ -1,0 +1,11 @@
+runs/
+output/
+*.log
+parallel.log
+*.root
+*.dat
+ampt/
+*.o
+*.mod
+.DS_Store
+*.swp
