@@ -1,6 +1,6 @@
 # Parallel_AMPT
 
-![License](https://img.shields.io/badge/license-MIT-blue)
+![License](https://img.shields.io/badge/license-GPLv3-blue)
 ![AMPT](https://img.shields.io/badge/AMPT-parallel-green)
 ![GNU Parallel](https://img.shields.io/badge/GNU%20Parallel-required-orange)
 
@@ -391,8 +391,9 @@ You can still use GNU Parallel **inside** each node for multi-core runs.
 ## License
 
 - **AMPT source code** — governed by the original AMPT license; see `ampt.zip`.
-- **Wrapper scripts & README** in this repository — MIT License.
-
+- **Wrapper scripts & documentation** in this repository — 
+  **GNU General Public License v3.0** (see [`LICENSE`](LICENSE)).
+  
 ---
 
 ## Acknowledgements
