@@ -329,3 +329,12 @@ You can still use GNU Parallel **inside** each node for multi-core runs.
 
 Thanks to the AMPT authors (Z.-W. Lin, C. M. Ko, B.-A. Li, B. Zhang, S. Pal)
 for making the code publicly available.
+
+---
+
+## 🧪 Tested With
+
+| OS | Compiler | ROOT | GNU Parallel | AMPT |
+|----|----------|------|--------------|------|
+| Ubuntu 22.04 | gcc 11 | 6.28 | 20210822 | v2.26t9b |
+| Rocky Linux 9 | gcc 11 | 6.28 | 20210822 | v2.26t9b |
