@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this workflow, please cite both the AMPT papers and this repository."
+title: "Parallel_AMPT"
+abstract: "A parallelized workflow for running the AMPT model across multiple CPU cores using GNU Parallel."
+authors:
+  - family-names: "Dhar"
+    given-names: "Dibakar"
+    affiliation: "Cooch Behar Panchanan Barma University"
+repository-code: "https://github.com/dibakardhar/Parallel_AMPT"
+license: MIT
+references:
+  - type: article
+    title: "A Multi-phase transport model for relativistic heavy ion collisions"
+    authors:
+      - family-names: "Lin"
+        given-names: "Zi-Wei"
+      - family-names: "Ko"
+        given-names: "Che Ming"
+      - family-names: "Li"
+        given-names: "Bao-An"
+      - family-names: "Zhang"
+        given-names: "Bin"
+      - family-names: "Pal"
+        given-names: "Subrata"
+    journal: "Phys. Rev. C"
+    volume: 72
+    start: 64901
+    year: 2005
+    doi: "10.1103/PhysRevC.72.064901"
