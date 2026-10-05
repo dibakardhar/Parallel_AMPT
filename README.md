@@ -16,6 +16,18 @@ This repository provides:
 
 ---
 
+## ⚡ Quick Start
+
+```bash
+git clone https://github.com/dibakardhar/Parallel_AMPT.git
+cd Parallel_AMPT
+unzip ampt.zip && cd ampt && make && cd ..
+chmod +x prepare_runs.sh run_parallel.sh scripts/*.sh
+./prepare_runs.sh 10 runs
+./run_parallel.sh 4 runs
+./scripts/merge_root.sh runs merged.root
+```
+
 ## 📚 Table of Contents
 
 1. [About AMPT](#about-ampt)
