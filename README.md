@@ -1,4 +1,8 @@
-# Parallel_AMPT
+# Parallel_AMPT 
+
+![License](https://img.shields.io/badge/license-MIT-blue)
+![AMPT](https://img.shields.io/badge/AMPT-parallel-green)
+![GNU Parallel](https://img.shields.io/badge/GNU%20Parallel-required-orange)
 
 A parallelized workflow for running the **A Multi-Phase Transport (AMPT) Model**
 across multiple CPU cores using [GNU Parallel](https://www.gnu.org/software/parallel/).
