@@ -87,6 +87,7 @@ Additional references (HIJING, ZPC, ART) are listed inside the AMPT manual
 
 ```
 Parallel_AMPT/
+├── prepare_runs.sh
 ├── ampt.zip                # Original AMPT source code
 ├── README.md               # This file
 ├── run_parallel.sh         # GNU Parallel wrapper script
